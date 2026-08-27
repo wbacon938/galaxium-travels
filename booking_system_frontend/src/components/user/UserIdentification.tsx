@@ -17,11 +17,21 @@ export const UserIdentification = ({ isOpen, onClose, onSuccess }: UserIdentific
   const [isLoading, setIsLoading] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim() || !email.trim()) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (!validateEmail(email.trim())) {
+      toast.error('Please enter a valid email address');
       return;
     }
 
@@ -96,7 +106,7 @@ export const UserIdentification = ({ isOpen, onClose, onSuccess }: UserIdentific
 
         <Input
           label="Email"
-          type="email"
+          type="text"
           placeholder="john@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
