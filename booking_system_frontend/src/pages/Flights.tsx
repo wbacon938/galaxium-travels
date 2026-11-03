@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Flight } from '../types';
+import type { Flight, SeatClass } from '../types';
 import { LoadingSpinner } from '../components/common';
 import { FlightCard } from '../components/flights/FlightCard';
 import { UserIdentification } from '../components/user/UserIdentification';
@@ -17,6 +17,7 @@ export const Flights = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
+  const [selectedClass, setSelectedClass] = useState<SeatClass>('economy');
   const [showUserModal, setShowUserModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
 
@@ -69,8 +70,9 @@ export const Flights = () => {
     }
   };
 
-  const handleBookFlight = (flight: Flight) => {
+  const handleBookFlight = (flight: Flight, seatClass: SeatClass = 'economy') => {
     setSelectedFlight(flight);
+    setSelectedClass(seatClass);
     
     if (!user) {
       // Show user identification modal first
@@ -179,6 +181,7 @@ export const Flights = () => {
         isOpen={showBookingModal}
         onClose={() => setShowBookingModal(false)}
         flight={selectedFlight}
+        initialClass={selectedClass}
         onSuccess={handleBookingSuccess}
       />
     </div>

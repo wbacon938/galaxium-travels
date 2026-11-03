@@ -23,8 +23,12 @@ class TestFlightsEndpoint:
             destination="Mars",
             departure_time="2099-01-01T09:00:00Z",
             arrival_time="2099-01-01T17:00:00Z",
-            price=1000000,
-            seats_available=5
+            price_economy=1000000,
+            price_business=1750000,
+            price_galaxium=3500000,
+            seats_economy=10,
+            seats_business=4,
+            seats_galaxium=2
         ))
         db_session.commit()
 
@@ -34,6 +38,9 @@ class TestFlightsEndpoint:
         assert len(data) == 1
         assert data[0]["origin"] == "Earth"
         assert data[0]["destination"] == "Mars"
+        assert data[0]["price_economy"] == 1000000
+        assert data[0]["price_business"] == 1750000
+        assert data[0]["price_galaxium"] == 3500000
 
 
 class TestRegisterEndpoint:
@@ -101,23 +108,30 @@ class TestBookEndpoint:
             destination="Mars",
             departure_time="2099-01-01T09:00:00Z",
             arrival_time="2099-01-01T17:00:00Z",
-            price=1000000,
-            seats_available=5
+            price_economy=1000000,
+            price_business=1750000,
+            price_galaxium=3500000,
+            seats_economy=5,
+            seats_business=3,
+            seats_galaxium=1
         ))
         db_session.commit()
         flight = db_session.query(Flight).first()
 
-        # Book flight
+        # Book flight in Business class
         response = client.post("/book", json={
             "user_id": user_id,
             "name": sample_user_data["name"],
-            "flight_id": flight.flight_id
+            "flight_id": flight.flight_id,
+            "seat_class": "business"
         })
 
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "booked"
         assert data["user_id"] == user_id
+        assert data["seat_class"] == "business"
+        assert data["price_paid"] == 1750000
 
     def test_book_flight_not_found(self, client, db_session, sample_user_data):
         """Test booking non-existent flight."""
@@ -151,8 +165,12 @@ class TestBookingsEndpoint:
             destination="Mars",
             departure_time="2099-01-01T09:00:00Z",
             arrival_time="2099-01-01T17:00:00Z",
-            price=1000000,
-            seats_available=5
+            price_economy=1000000,
+            price_business=1750000,
+            price_galaxium=3500000,
+            seats_economy=5,
+            seats_business=3,
+            seats_galaxium=1
         ))
         db_session.commit()
         flight = db_session.query(Flight).first()
@@ -160,6 +178,8 @@ class TestBookingsEndpoint:
         db_session.add(Booking(
             user_id=user_id,
             flight_id=flight.flight_id,
+            seat_class="business",
+            price_paid=1750000,
             status="booked",
             booking_time="2099-01-01T10:00:00Z"
         ))
@@ -193,8 +213,12 @@ class TestCancelEndpoint:
             destination="Mars",
             departure_time="2099-01-01T09:00:00Z",
             arrival_time="2099-01-01T17:00:00Z",
-            price=1000000,
-            seats_available=4
+            price_economy=1000000,
+            price_business=1750000,
+            price_galaxium=3500000,
+            seats_economy=5,
+            seats_business=3,
+            seats_galaxium=1
         ))
         db_session.commit()
         flight = db_session.query(Flight).first()
@@ -202,6 +226,8 @@ class TestCancelEndpoint:
         db_session.add(Booking(
             user_id=user_id,
             flight_id=flight.flight_id,
+            seat_class="economy",
+            price_paid=1000000,
             status="booked",
             booking_time="2099-01-01T10:00:00Z"
         ))

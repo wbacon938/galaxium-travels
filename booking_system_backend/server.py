@@ -19,7 +19,7 @@ mcp = FastMCP("Galaxium Booking System")
 @mcp.tool()
 def list_flights() -> list[FlightOut]:
     """List all available flights.
-    Returns a list of flights with origin, destination, times, price, and seats available."""
+    Returns a list of flights with origin, destination, times, seat class prices, and seats available per class."""
     db = SessionLocal()
     try:
         return flight.list_flights(db)
@@ -28,14 +28,14 @@ def list_flights() -> list[FlightOut]:
 
 
 @mcp.tool()
-def book_flight(user_id: int, name: str, flight_id: int) -> BookingOut:
-    """Book a seat on a specific flight for a user.
-    Requires user_id, name, and flight_id.
-    Decrements available seats if successful.
+def book_flight(user_id: int, name: str, flight_id: int, seat_class: str = "economy") -> BookingOut:
+    """Book a seat on a specific flight for a user in a specific class (economy, business, galaxium).
+    Requires user_id, name, and flight_id. Optional seat_class defaults to 'economy'.
+    Decrements available seats in that class if successful.
     Returns booking details or raises an error if booking is not possible."""
     db = SessionLocal()
     try:
-        result = booking.book_flight(db, user_id, name, flight_id)
+        result = booking.book_flight(db, user_id, name, flight_id, seat_class)
         if isinstance(result, ErrorResponse):
             raise Exception(result.details or result.error)
         return result
@@ -146,9 +146,9 @@ def get_flights(db: Session = Depends(get_db)):
 def book_flight_endpoint(request: BookingRequest, db: Session = Depends(get_db)):
     """Book a seat on a specific flight for a user.
 
-    Requires user_id, name, and flight_id. Decrements available seats if successful.
+    Requires user_id, name, flight_id, and optional seat_class (economy, business, galaxium). Decrements available seats for the class if successful.
     """
-    return booking.book_flight(db, request.user_id, request.name, request.flight_id)
+    return booking.book_flight(db, request.user_id, request.name, request.flight_id, request.seat_class)
 
 
 @app.get("/bookings/{user_id}", response_model=list[BookingOut], tags=["Bookings"])
